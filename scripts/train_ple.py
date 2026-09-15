@@ -16,20 +16,19 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.data.feature_encoder import FeatureEncoder
 from src.models.ple import PLE
+from src.trainer.cli import add_training_arguments, build_config_overrides
 from src.trainer.multitask_experiment import run_multitask_experiment
 from src.trainer.ple_trainer import PLETrainer
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", default="configs/ple.yaml")
-    parser.add_argument("--data-config")
-    parser.add_argument("--experiment-name")
-    parser.add_argument("--batch-size", type=int)
-    parser.add_argument("--num-workers", type=int)
-    parser.add_argument("--device", choices=("auto", "cpu", "cuda"))
-    parser.add_argument("--run-name")
-    parser.add_argument("--resume-from")
+    add_training_arguments(
+        parser,
+        default_config="configs/ple.yaml",
+        model_fields=("embedding_dim", "dropout", "gate_dropout"),
+        loss_fields=("ctr_weight", "cvr_weight"),
+    )
     return parser.parse_args()
 
 
@@ -69,6 +68,7 @@ def main() -> None:
         batch_size_override=args.batch_size,
         num_workers_override=args.num_workers,
         resume_from=args.resume_from,
+        config_overrides=build_config_overrides(args),
     )
     report = {"valid": True, "run_directory": str(run_directory), **result}
     print(json.dumps(report, ensure_ascii=False, indent=2))

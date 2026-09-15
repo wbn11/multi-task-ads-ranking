@@ -9,6 +9,7 @@ from .lr_trainer import LRTrainer
 from .mmoe_trainer import MMoETrainer
 from .multitask_trainer_base import MultiTaskTrainerBase
 from .ple_trainer import PLETrainer
+from .ple_esmm_trainer import PLEESMMTrainer
 from .shared_bottom_trainer import SharedBottomTrainer
 
 __all__ = [
@@ -21,5 +22,6 @@ __all__ = [
     "MMoETrainer",
     "MultiTaskTrainerBase",
     "PLETrainer",
+    "PLEESMMTrainer",
     "SharedBottomTrainer",
 ]

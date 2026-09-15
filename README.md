@@ -27,7 +27,7 @@ src/calibration/  先验修正、Platt、Isotonic
 src/trainer/      统一训练与评估流程
 data/raw/         Ali-CCP原始文件
 data/processed/   生成的模型数据
-results/          实际实验配置、checkpoint、日志与指标
+results/          本地运行产物；Git只保留实验汇总表
 tests/            单元测试
 .venv/            当前机器的虚拟环境，不提交、不跨系统复制
 ```
@@ -214,10 +214,13 @@ python scripts/train_shared_bottom.py --config configs/shared_bottom.yaml --devi
 python scripts/train_esmm.py --config configs/esmm.yaml --device cuda
 python scripts/train_mmoe.py --config configs/mmoe.yaml --device cuda
 python scripts/train_ple.py --config configs/ple.yaml --device cuda
+python scripts/train_dcn_ple.py --config configs/dcn_ple.yaml --device cuda
+python scripts/train_ple_esmm.py --config configs/ple_esmm.yaml --device cuda
+python scripts/train_dcn_ple_esmm.py --config configs/dcn_ple_esmm.yaml --device cuda
 ```
 
 训练入口支持AMP、early stopping、gradient clipping、checkpoint、训练日志和配置
-快照。`--batch-size`与`--num-workers`可以根据服务器资源覆盖配置。每个完整epoch
+快照。每个完整epoch
 保存可恢复的`latest.pt`，指标最优模型保存为`best.pt`。中断后从原实验目录继续：
 
 ```bash
@@ -229,6 +232,61 @@ python scripts/train_lr.py \
 
 多任务模型统一使用验证集CTCVR AUC选择`best.pt`，同时完整报告CTR、点击空间CVR
 与曝光空间CTCVR指标。
+
+### 配置与命令行覆盖
+
+`configs/`只保留每种架构的一份默认配置。YAML是默认值的唯一来源，命令行参数
+未提供时不会在Python代码中重复写死默认值。常用训练参数可直接覆盖：
+
+```bash
+python scripts/train_dcn_ple_esmm.py \
+  --device cuda \
+  --seed 2027 \
+  --learning-rate 0.0005 \
+  --dropout 0.2 \
+  --gate-dropout 0.0 \
+  --batch-size 8192 \
+  --num-workers 8 \
+  --early-stopping-patience 3 \
+  --run-name dropout_02_lr_5e4_seed_2027
+```
+
+负采样、辅助CVR和Target-aware实验不再复制整份YAML：
+
+```bash
+# 未点击曝光负采样1:5
+python scripts/train_dcn_ple_esmm.py \
+  --device cuda \
+  --negative-sampling-ratio 5 \
+  --run-name negative_1_5_seed_2026
+
+# 仅对辅助点击空间CVR项做1:20采样，权重0.02
+python scripts/train_dcn_ple_esmm.py \
+  --device cuda \
+  --auxiliary-cvr-weight 0.02 \
+  --auxiliary-cvr-negative-ratio 20 \
+  --run-name aux_cvr_1_20_weight_002_seed_2026
+
+# Target-aware是独立架构，因此选择它自己的唯一默认配置
+python scripts/train_dcn_ple_esmm.py \
+  --config configs/target_aware_dcn_ple_esmm.yaml \
+  --device cuda \
+  --run-name dropout_02_seed_2026
+```
+
+`--negative-sampling-ratio`会启用训练集曝光负采样，`--no-negative-sampling`强制
+使用全样本。`--amp/--no-amp`、`--pin-memory/--no-pin-memory`和
+`--columnar-batching/--no-columnar-batching`用于布尔开关。少用的结构参数可通过
+`--set SECTION.KEY=VALUE`覆盖，例如：
+
+```bash
+python scripts/train_deepfm.py \
+  --device cuda \
+  --set 'model.hidden_dims=[512,256,128]'
+```
+
+每个run中的`config.yaml`记录合并命令行参数后的最终配置，因而实验仍可追踪和
+复现。运行`python scripts/train_dcn_ple_esmm.py --help`可查看该模型支持的参数。
 
 ## 模型与目标
 
@@ -291,14 +349,15 @@ DCNv2显著优于LR和DeepFM，表明这批匿名稀疏字段的显式高阶交�
 | ESMM | 0.622897 | 0.669692 | 0.653902 | 0.615818 | **0.001994** |
 | MMoE | 0.622986 | 0.672177 | 0.661048 | 0.611964 | 0.002070 |
 | PLE | 0.618929 | 0.680956 | 0.663300 | 0.625665 | 0.002137 |
-| Target-aware DCN-PLE-ESMM | **0.627093** | 0.680538 | 0.670384 | **0.627006** | 0.002047 |
-| **DCN-PLE-ESMM** | 0.625479 | **0.691803** | **0.672664** | 0.623419 | 0.002014 |
+| Target-aware DCN-PLE-ESMM | **0.627893** | 0.679687 | 0.668247 | 0.619018 | 0.002080 |
+| **DCN-PLE-ESMM** | 0.627595 | **0.692857** | **0.677874** | 0.622393 | 0.002049 |
 
 最终主模型选择DCN-PLE-ESMM：16维field embedding先经过3层Matrix Cross Network
 学习显式特征交叉，再送入包含2个共享专家、1个CTR专属专家和1个CVR专属专家的
 PLE，最后使用ESMM的CTR+CTCVR全曝光空间目标训练。它取得最高CVR AUC与全局
-CTCVR AUC。单任务DCNv2的CTR AUC略高，Target-aware版本的CTCVR GAUC略高，
-因此这里不宣称所有指标全面领先。
+CTCVR AUC。PLE等基线在部分GAUC上仍有优势，因此这里不宣称所有指标全面领先。
+3个随机种子下，dropout 0.2的CTCVR AUC为`0.66936 ± 0.00853`，dropout 0.1为
+`0.66570 ± 0.00874`；0.2均值略高但差距小于随机波动，不能声称显著提升。
 
 ### 概率校准
 
@@ -306,25 +365,28 @@ CTCVR AUC。单任务DCNv2的CTR AUC略高，Target-aware版本的CTCVR GAUC略�
 
 | Task | Raw LogLoss | Platt LogLoss | Raw ECE | Platt ECE |
 |---|---:|---:|---:|---:|
-| CTR | 0.161615 | **0.160325** | 0.007770 | **0.000920** |
-| CVR | 0.033390 | **0.032677** | 0.001977 | **0.000571** |
-| CTCVR | 0.002014 | **0.001971** | 0.000114 | **0.000023** |
+| CTR | 0.161731 | **0.160221** | 0.010549 | **0.000920** |
+| CVR | 0.034893 | **0.032686** | 0.002589 | **0.000422** |
+| CTCVR | 0.002049 | **0.001970** | 0.000117 | **0.000020** |
 
 Platt Scaling基本保持排序能力，同时明显改善概率误差。Isotonic同样改善校准，但在
 极稀疏转化任务中产生更多相同分数并轻微降低AUC，因此最终推荐Platt。
 
 ### 负采样与模型消融
 
-- 对未点击曝光做1:10均匀降采样后，CTR AUC为0.625726，基本保持；但CTCVR AUC
-  降至0.652472。原始平均pCTR从真实0.038828偏到0.107481，说明负采样会改变
-  类别先验。先验修正和Platt能恢复概率尺度，但不能恢复已经损失的排序能力。
-- 为ESMM增加点击空间CVR 1:20辅助损失后，CTCVR AUC降至0.662290，平均pCVR
-  达到0.043994，而真实CVR只有0.005479；CVR Gate同时塌缩到单个共享专家。
-  该实验说明强辅助监督会破坏PLE的信息解耦，因此不进入最终方案。
+- 对未点击曝光做1:5均匀降采样，训练总时间从约2069秒降至636秒，但CTCVR AUC
+  从0.677874降至0.658952；1:20耗时1855秒、CTCVR AUC为0.670302。先验修正和
+  Platt能恢复概率尺度，但不能恢复已经损失的排序能力，因此全样本仍是最终默认。
+- 辅助点击空间CVR的1:20采样在权重0.1时明显破坏概率和排序；将权重降为0.02后，
+  CTCVR AUC为0.676627，接近主模型但没有超过0.677874，原始LogLoss也更差。
+  它作为数据稀疏性消融保留，不进入默认损失。
 - Gate Dropout没有带来稳定的全局提升：MMoE的CTCVR AUC从0.661048降至
-  0.659244；PLE的AUC近似持平但GAUC下降。
-- Target-aware历史注意力提高CTR AUC和CTCVR GAUC，但全局CTCVR AUC低于
-  主模型且训练更慢，因此作为消融保留。
+  0.659244；主模型设置0.1后CTCVR AUC也降至0.665352。
+- Target-aware历史注意力的CTCVR AUC为0.668247，低于主模型且训练更慢，因此
+  作为消融保留。
+- 固定网络结构的组件消融中，DCNv2+PLE使用点击空间CVR损失得到0.662116，
+  PLE+ESMM得到0.667359，完整DCNv2+PLE+ESMM得到0.677874，支持显式交叉与
+  全曝光空间目标的组合价值。
 
 这些结果共同说明最终方案不是按模块数量选择，而是以完整曝光空间CTCVR排序为
 主指标，通过对照实验保留有效模块、排除无收益或造成概率偏移的模块。
@@ -341,8 +403,13 @@ results/<experiment>_<timestamp>/
 └── train.log
 ```
 
-仓库保留所有全量实验的配置、指标和日志。约1GB的模型checkpoint不提交Git；本地
-只需保留最终DCN-PLE-ESMM的`best.pt`，其他模型均可通过对应配置重新训练。
+原始run目录和约1GB的checkpoint均不提交Git；本地只需长期保留最终模型及关键
+消融的`best.pt`。仓库提交`results/experiment_summary.csv`，它通过下列命令从本地
+全部`metrics.json`和校准结果重新生成：
+
+```bash
+python scripts/summarize_results.py
+```
 
 ## 测试
 

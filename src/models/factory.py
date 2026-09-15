@@ -9,6 +9,7 @@ from torch import nn
 
 from src.data.feature_encoder import FeatureEncoder
 
+from .dcn_ple import DCNPLE
 from .dcn_ple_esmm import DCNPLEESMM
 from .esmm import ESMM
 from .mmoe import MMoE
@@ -60,7 +61,7 @@ def build_multitask_model(
             gate_dropout=float(model_config.get("gate_dropout", 0.0)),
             **common,
         )
-    if model_name == "ple":
+    if model_name in ("ple", "ple_esmm"):
         return PLE.from_feature_encoder(
             encoder,
             num_shared_experts=int(model_config["num_shared_experts"]),
@@ -72,8 +73,9 @@ def build_multitask_model(
             gate_dropout=float(model_config.get("gate_dropout", 0.0)),
             **common,
         )
-    if model_name == "dcn_ple_esmm":
-        return DCNPLEESMM.from_feature_encoder(
+    if model_name in ("dcn_ple", "dcn_ple_esmm"):
+        model_class = DCNPLE if model_name == "dcn_ple" else DCNPLEESMM
+        return model_class.from_feature_encoder(
             encoder,
             num_cross_layers=int(model_config["num_cross_layers"]),
             cross_layer_norm=bool(model_config.get("cross_layer_norm", True)),

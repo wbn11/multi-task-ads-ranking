@@ -20,6 +20,7 @@ from src.data.dataloader import create_dataloader
 from src.data.dataset import AdsDataset
 from src.data.feature_encoder import FeatureEncoder
 from src.data.sampler import configure_negative_downsampling
+from src.trainer.cli import merge_config_overrides
 from src.trainer.ctr_trainer_base import CTRTrainerBase
 
 
@@ -171,11 +172,14 @@ def run_ctr_experiment(
     batch_size_override: int | None = None,
     num_workers_override: int | None = None,
     resume_from: str | Path | None = None,
+    config_overrides: Mapping[str, Any] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     """Run train/validation/test while keeping model entrypoints explicit."""
 
     resolved_config_path = project_path(project_root, config_path)
-    experiment_file = load_yaml(resolved_config_path)
+    experiment_file = merge_config_overrides(
+        load_yaml(resolved_config_path), config_overrides
+    )
     model_config = experiment_file.get("model")
     data_reference = experiment_file.get("data")
     training_config = experiment_file.get("training")

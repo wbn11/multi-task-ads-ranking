@@ -12,11 +12,11 @@ data/raw/*
 data/processed/*
 data/cache/*
 
-# Keep experiment metrics/configs/logs publishable, but never commit large
-# model checkpoints or local transfer archives.
-results/**/best.pt
-results/**/latest.pt
-results/**/*_console.log
+# Raw experiment runs and checkpoints remain local. Commit only the compact
+# generated summary and its policy document.
+results/*
+!results/README.md
+!results/experiment_summary.csv
 *.tar.gz
 
 # Editor and operating-system metadata.

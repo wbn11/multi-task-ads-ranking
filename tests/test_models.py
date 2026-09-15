@@ -17,6 +17,7 @@ if TORCH_AVAILABLE:
     from src.layers.expert import Expert, Gate
     from src.layers.fm import FactorizationMachine
     from src.models.dcnv2 import DCNv2
+    from src.models.dcn_ple import DCNPLE
     from src.models.dcn_ple_esmm import DCNPLEESMM
     from src.models.deepfm import DeepFM
     from src.models.esmm import ESMM
@@ -560,6 +561,28 @@ class DCNPLEESMMTest(unittest.TestCase):
         self.assertTrue(gradients)
         self.assertTrue(
             all(bool(torch.isfinite(gradient).all()) for gradient in gradients)
+        )
+
+    def test_dcn_ple_ablation_keeps_the_same_network_contract(self) -> None:
+        model = DCNPLE(
+            {field_id: 8 for field_id in ALL_FIELD_IDS},
+            embedding_dim=4,
+            num_cross_layers=2,
+            cross_layer_norm=True,
+            num_shared_experts=2,
+            num_task_experts=1,
+            expert_hidden_dims=(16, 8),
+            tower_hidden_dims=(4,),
+            dropout=0.0,
+        )
+
+        output = model(make_model_batch(), return_gate_weights=True)
+
+        self.assertIsInstance(model, DCNPLEESMM)
+        self.assertEqual(tuple(output["ctr"].shape), (2,))
+        self.assertEqual(tuple(output["cvr"].shape), (2,))
+        self.assertTrue(
+            torch.allclose(output["ctcvr"], output["ctr"] * output["cvr"])
         )
 
 if __name__ == "__main__":

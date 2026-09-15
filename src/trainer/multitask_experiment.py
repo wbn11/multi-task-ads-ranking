@@ -14,6 +14,7 @@ from torch import nn
 from src.data.dataloader import create_dataloader
 from src.data.dataset import AdsDataset
 from src.data.feature_encoder import FeatureEncoder
+from src.trainer.cli import merge_config_overrides
 from src.trainer.ctr_experiment import (
     build_run_directory,
     create_logger,
@@ -46,11 +47,14 @@ def run_multitask_experiment(
     batch_size_override: int | None = None,
     num_workers_override: int | None = None,
     resume_from: str | Path | None = None,
+    config_overrides: Mapping[str, Any] | None = None,
 ) -> tuple[Path, dict[str, Any]]:
     """Run multi-task train/validation/test and persist one traceable run."""
 
     resolved_config_path = project_path(project_root, config_path)
-    experiment_file = load_yaml(resolved_config_path)
+    experiment_file = merge_config_overrides(
+        load_yaml(resolved_config_path), config_overrides
+    )
     sections = {
         name: experiment_file.get(name)
         for name in ("model", "loss", "data", "training", "experiment")

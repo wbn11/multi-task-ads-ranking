@@ -35,9 +35,13 @@ training:
   weight_decay: 0.000001
   amp: true
   gradient_clip_norm: 5.0
-  early_stopping_patience: 2
+  early_stopping_patience: 3
   early_stopping_min_delta: 0.0001
   device: auto
+  negative_sampling:
+    enabled: false
+    negative_to_positive_ratio: 10.0
+    seed: 2026
 
 experiment:
   name: dcnv2_aliccp_full

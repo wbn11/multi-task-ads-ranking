@@ -1,4 +1,4 @@
-"""Train and evaluate ESMM on the processed Ali-CCP splits."""
+"""Train PLE with the ESMM entire-space CTR and CTCVR objective."""
 
 from __future__ import annotations
 
@@ -15,39 +15,32 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.data.feature_encoder import FeatureEncoder
-from src.models.esmm import ESMM
+from src.models.factory import build_multitask_model
+from src.models.ple import PLE
 from src.trainer.cli import add_training_arguments, build_config_overrides
-from src.trainer.esmm_trainer import ESMMTrainer
 from src.trainer.multitask_experiment import run_multitask_experiment
+from src.trainer.ple_esmm_trainer import PLEESMMTrainer
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     add_training_arguments(
         parser,
-        default_config="configs/esmm.yaml",
-        model_fields=("embedding_dim", "dropout"),
+        default_config="configs/ple_esmm.yaml",
+        model_fields=("embedding_dim", "dropout", "gate_dropout"),
         loss_fields=("ctr_weight", "ctcvr_weight"),
     )
     return parser.parse_args()
 
 
-def build_esmm(
+def build_ple_esmm(
     encoder: FeatureEncoder,
     model_config: Mapping[str, Any],
-) -> ESMM:
-    return ESMM.from_feature_encoder(
-        encoder,
-        embedding_dim=int(model_config["embedding_dim"]),
-        shared_hidden_dims=tuple(
-            int(value) for value in model_config["shared_hidden_dims"]
-        ),
-        tower_hidden_dims=tuple(
-            int(value) for value in model_config["tower_hidden_dims"]
-        ),
-        dropout=float(model_config["dropout"]),
-        embedding_pooling=str(model_config["embedding_pooling"]),
-    )
+) -> PLE:
+    model = build_multitask_model(encoder, model_config)
+    if not isinstance(model, PLE):
+        raise TypeError("model must use the PLE architecture")
+    return model
 
 
 def main() -> None:
@@ -55,9 +48,9 @@ def main() -> None:
     run_directory, result = run_multitask_experiment(
         project_root=PROJECT_ROOT,
         config_path=args.config,
-        expected_model_name="esmm",
-        model_builder=build_esmm,
-        trainer_class=ESMMTrainer,
+        expected_model_name="ple_esmm",
+        model_builder=build_ple_esmm,
+        trainer_class=PLEESMMTrainer,
         device_override=args.device,
         run_name=args.run_name,
         data_config_override=args.data_config,

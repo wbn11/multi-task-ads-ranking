@@ -24,6 +24,7 @@ from src.data.feature_encoder import FeatureEncoder
 from src.losses.multitask_loss import (
     ESMMLoss,
     ESMMWithAuxiliaryCVRLoss,
+    MaskedCVRMultiTaskLoss,
     build_esmm_loss,
 )
 from src.models.dcn_ple_esmm import DCNPLEESMM
@@ -73,7 +74,7 @@ def _mean(probabilities: Tensor, mask: Tensor) -> float:
 
 def _evaluate(
     model: DCNPLEESMM,
-    criterion: ESMMLoss,
+    criterion: nn.Module,
     batch: Mapping[str, Any],
     loss_names: tuple[str, ...],
 ) -> tuple[dict[str, float], dict[str, Tensor]]:
@@ -106,7 +107,11 @@ def main() -> None:
     config = load_yaml(project_path(PROJECT_ROOT, args.config))
     model_config = config["model"]
     model_name = str(model_config["name"]).lower()
-    supported_models = ("dcn_ple_esmm", "target_aware_dcn_ple_esmm")
+    supported_models = (
+        "dcn_ple",
+        "dcn_ple_esmm",
+        "target_aware_dcn_ple_esmm",
+    )
     if model_name not in supported_models:
         raise ValueError(
             "overfit_dcn_ple_esmm.py requires model.name in "
@@ -157,12 +162,23 @@ def main() -> None:
 
         encoder = FeatureEncoder.load(processed_dir / "vocab.json")
         model = _build_model(encoder, model_config).to(device)
-        criterion = build_esmm_loss(loss_config)
+        criterion: nn.Module
+        if model_name == "dcn_ple":
+            criterion = MaskedCVRMultiTaskLoss(
+                ctr_weight=float(loss_config["ctr_weight"]),
+                cvr_weight=float(loss_config["cvr_weight"]),
+            )
+        else:
+            criterion = build_esmm_loss(loss_config)
         auxiliary_cvr_enabled = isinstance(
             criterion,
             ESMMWithAuxiliaryCVRLoss,
         )
-        loss_names = ("loss", "ctr_loss", "ctcvr_loss")
+        loss_names = (
+            ("loss", "ctr_loss", "cvr_loss")
+            if isinstance(criterion, MaskedCVRMultiTaskLoss)
+            else ("loss", "ctr_loss", "ctcvr_loss")
+        )
         if auxiliary_cvr_enabled:
             loss_names += ("auxiliary_cvr_loss",)
         optimizer = torch.optim.Adam(

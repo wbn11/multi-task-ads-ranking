@@ -21,6 +21,7 @@ if TORCH_AVAILABLE:
     from src.trainer.mmoe_trainer import MMoETrainer
     from src.trainer.multitask_trainer_base import MultiTaskTrainerBase
     from src.trainer.ple_trainer import PLETrainer
+    from src.trainer.ple_esmm_trainer import PLEESMMTrainer
 
 
 def make_logger() -> logging.Logger:
@@ -251,6 +252,33 @@ class MultiTaskTrainerAggregationTest(unittest.TestCase):
     def test_model_specific_trainers_share_gate_behavior(self) -> None:
         self.assertTrue(issubclass(MMoETrainer, ExpertGateTrainer))
         self.assertTrue(issubclass(PLETrainer, ExpertGateTrainer))
+
+    def test_ple_esmm_trainer_combines_esmm_loss_and_gate_diagnostics(self) -> None:
+        model = PLEAnchorModel()
+        trainer = PLEESMMTrainer(
+            model=model,
+            optimizer=torch.optim.SGD(model.parameters(), lr=0.0),
+            device=torch.device("cpu"),
+            amp=False,
+            gradient_clip_norm=None,
+            logger=make_logger(),
+            loss_config={"ctr_weight": 1.0, "ctcvr_weight": 1.0},
+        )
+
+        self.assertIsInstance(trainer.criterion, ESMMLoss)
+        state = trainer._create_evaluation_diagnostics()
+        trainer._update_evaluation_diagnostics(
+            state,
+            {
+                "ctr_gate_weights": torch.tensor([[0.2, 0.5, 0.3]]),
+                "cvr_gate_weights": torch.tensor([[0.4, 0.4, 0.2]]),
+            },
+        )
+        metrics = trainer._finalize_evaluation_diagnostics(state)
+        self.assertEqual(
+            metrics["gate_expert_order"]["cvr"],
+            ["shared_1", "shared_2", "cvr_specific_1"],
+        )
 
     def test_ple_trainer_reports_gate_expert_order(self) -> None:
         model = PLEAnchorModel()
