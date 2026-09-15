@@ -1,0 +1,4 @@
+# Reproducible GPU environment for the RTX A6000 host (driver 565 / CUDA 12.x).
+--extra-index-url https://download.pytorch.org/whl/cu126
+-r requirements.txt
+torch==2.7.1+cu126

@@ -1,0 +1,63 @@
+model:
+  name: dcn_ple_esmm
+  targets:
+    - click
+    - conversion
+  embedding_dim: 16
+  embedding_pooling: weighted_mean
+  num_cross_layers: 3
+  cross_layer_norm: true
+  num_shared_experts: 2
+  num_task_experts: 1
+  expert_hidden_dims:
+    - 256
+    - 128
+  tower_hidden_dims:
+    - 64
+  dropout: 0.1
+  gate_dropout: 0.0
+
+loss:
+  ctr_weight: 1.0
+  ctcvr_weight: 1.0
+  auxiliary_cvr_loss:
+    enabled: true
+    weight: 0.1
+    negative_to_positive_ratio: 20.0
+
+data:
+  config: configs/data.yaml
+  split: train
+
+overfit:
+  seed: 2026
+  batch_size: 512
+  conversion_positives: 16
+  clicked_non_conversions: 320
+  steps: 500
+  learning_rate: 0.001
+  weight_decay: 0.0
+  minimum_loss_reduction: 0.20
+  gate_sum_tolerance: 0.000001
+  device: auto
+
+training:
+  seed: 2026
+  epochs: 10
+  batch_size: 8192
+  num_workers: 8
+  pin_memory: true
+  columnar_batching: true
+  learning_rate: 0.001
+  weight_decay: 0.000001
+  amp: true
+  gradient_clip_norm: 5.0
+  early_stopping_patience: 3
+  early_stopping_min_delta: 0.0001
+  selection_task: ctcvr
+  selection_metric: auc
+  device: auto
+
+experiment:
+  name: dcn_ple_esmm_aliccp_full_aux_cvr_negative_1_20
+  output_root: results

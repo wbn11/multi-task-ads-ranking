@@ -1,0 +1,36 @@
+model:
+  name: lr
+  target: click
+
+data:
+  config: configs/data.yaml
+  split: train
+
+overfit:
+  seed: 2026
+  batch_size: 512
+  num_workers: 0
+  steps: 200
+  learning_rate: 0.01
+  weight_decay: 0.0
+  minimum_loss_reduction: 0.20
+  device: auto
+
+training:
+  seed: 2026
+  epochs: 10
+  batch_size: 4096
+  num_workers: 8
+  pin_memory: true
+  columnar_batching: true
+  learning_rate: 0.001
+  weight_decay: 0.000001
+  amp: true
+  gradient_clip_norm: 5.0
+  early_stopping_patience: 2
+  early_stopping_min_delta: 0.0001
+  device: auto
+
+experiment:
+  name: lr_aliccp_full
+  output_root: results

@@ -1,0 +1,26 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+
+# Ali-CCP raw files are large and must stay local.
+data/raw/*
+!data/raw/README.md
+
+# Generated debug and processed datasets.
+data/processed/*
+data/cache/*
+
+# Keep experiment metrics/configs/logs publishable, but never commit large
+# model checkpoints or local transfer archives.
+results/**/best.pt
+results/**/latest.pt
+results/**/*_console.log
+*.tar.gz
+
+# Editor and operating-system metadata.
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

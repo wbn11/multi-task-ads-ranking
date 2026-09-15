@@ -1,0 +1,20 @@
+2026-09-14 16:45:03 | INFO | run_directory=/root/autodl-tmp/multi-task-ads-ranking/results/deepfm_aliccp_full_20260914_164503
+2026-09-14 16:45:03 | INFO | model=deepfm device=cuda torch=2.7.1+cu126 cuda=12.6 amp_requested=True
+2026-09-14 16:45:03 | INFO | negative_sampling={'enabled': False, 'strategy': 'all_samples', 'original_samples': 42299905, 'original_positive_samples': 1644256, 'original_negative_samples': 40655649, 'sampled_samples_per_epoch': 42299905, 'negative_keep_probability': 1.0}
+2026-09-14 16:54:51 | INFO | epoch=1 train_loss=0.171210 val_auc=0.573792 val_gauc=0.584068 val_log_loss=0.176323 val_pr_auc=0.051272 lr=0.001 train_seconds=517.24 val_seconds=61.64
+2026-09-14 16:54:52 | INFO | saved best checkpoint: epoch=1 val_auc=0.573792 path=/root/autodl-tmp/multi-task-ads-ranking/results/deepfm_aliccp_full_20260914_164503/best.pt
+2026-09-14 16:54:54 | INFO | saved resumable checkpoint: epoch=1 path=/root/autodl-tmp/multi-task-ads-ranking/results/deepfm_aliccp_full_20260914_164503/latest.pt
+2026-09-14 17:04:38 | INFO | epoch=2 train_loss=0.167299 val_auc=0.584168 val_gauc=0.585876 val_log_loss=0.177484 val_pr_auc=0.052916 lr=0.001 train_seconds=522.64 val_seconds=62.02
+2026-09-14 17:04:40 | INFO | saved best checkpoint: epoch=2 val_auc=0.584168 path=/root/autodl-tmp/multi-task-ads-ranking/results/deepfm_aliccp_full_20260914_164503/best.pt
+2026-09-14 17:04:42 | INFO | saved resumable checkpoint: epoch=2 path=/root/autodl-tmp/multi-task-ads-ranking/results/deepfm_aliccp_full_20260914_164503/latest.pt
+2026-09-14 17:14:30 | INFO | epoch=3 train_loss=0.165522 val_auc=0.578937 val_gauc=0.585107 val_log_loss=0.178936 val_pr_auc=0.052299 lr=0.001 train_seconds=524.43 val_seconds=64.18
+2026-09-14 17:14:32 | INFO | saved resumable checkpoint: epoch=3 path=/root/autodl-tmp/multi-task-ads-ranking/results/deepfm_aliccp_full_20260914_164503/latest.pt
+2026-09-14 17:24:14 | INFO | epoch=4 train_loss=0.164123 val_auc=0.585338 val_gauc=0.587334 val_log_loss=0.183353 val_pr_auc=0.052918 lr=0.001 train_seconds=521.92 val_seconds=60.55
+2026-09-14 17:24:16 | INFO | saved best checkpoint: epoch=4 val_auc=0.585338 path=/root/autodl-tmp/multi-task-ads-ranking/results/deepfm_aliccp_full_20260914_164503/best.pt
+2026-09-14 17:24:17 | INFO | saved resumable checkpoint: epoch=4 path=/root/autodl-tmp/multi-task-ads-ranking/results/deepfm_aliccp_full_20260914_164503/latest.pt
+2026-09-14 17:33:26 | INFO | epoch=5 train_loss=0.162421 val_auc=0.576212 val_gauc=0.584991 val_log_loss=0.179797 val_pr_auc=0.052010 lr=0.001 train_seconds=486.67 val_seconds=62.33
+2026-09-14 17:33:28 | INFO | saved resumable checkpoint: epoch=5 path=/root/autodl-tmp/multi-task-ads-ranking/results/deepfm_aliccp_full_20260914_164503/latest.pt
+2026-09-14 17:42:22 | INFO | epoch=6 train_loss=0.160313 val_auc=0.580972 val_gauc=0.584758 val_log_loss=0.182396 val_pr_auc=0.052667 lr=0.001 train_seconds=476.48 val_seconds=57.65
+2026-09-14 17:42:23 | INFO | saved resumable checkpoint: epoch=6 path=/root/autodl-tmp/multi-task-ads-ranking/results/deepfm_aliccp_full_20260914_164503/latest.pt
+2026-09-14 17:42:23 | INFO | early stopping after epoch=6; best_epoch=4
+2026-09-14 17:49:58 | INFO | test_auc=0.584801 test_gauc=0.588494 test_log_loss=0.183517 test_pr_auc=0.052898

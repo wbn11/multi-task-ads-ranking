@@ -1,0 +1,490 @@
+{
+  "model": "shared_bottom",
+  "targets": [
+    "click",
+    "conversion"
+  ],
+  "model_hyperparameters": {
+    "name": "shared_bottom",
+    "targets": [
+      "click",
+      "conversion"
+    ],
+    "embedding_dim": 16,
+    "embedding_pooling": "weighted_mean",
+    "shared_hidden_dims": [
+      256,
+      128
+    ],
+    "tower_hidden_dims": [
+      64
+    ],
+    "dropout": 0.1
+  },
+  "loss_hyperparameters": {
+    "ctr_weight": 1.0,
+    "cvr_weight": 1.0
+  },
+  "data_config": "/root/autodl-tmp/multi-task-ads-ranking/configs/data.yaml",
+  "processed_dir": "/root/autodl-tmp/multi-task-ads-ranking/data/processed/aliccp_full",
+  "device": "cuda",
+  "amp_enabled": true,
+  "parameter_count": 81184178,
+  "dataset_sizes": {
+    "train": 42299905,
+    "validation": 4263506,
+    "test": 38353110
+  },
+  "negative_sampling": {
+    "enabled": false,
+    "strategy": "all_samples",
+    "original_samples": 42299905,
+    "original_positive_samples": 1644256,
+    "original_negative_samples": 40655649,
+    "sampled_samples_per_epoch": 42299905,
+    "negative_keep_probability": 1.0
+  },
+  "training": {
+    "selection": {
+      "task": "ctcvr",
+      "metric": "auc"
+    },
+    "best_epoch": 2,
+    "best_validation_score": 0.6456899108424234,
+    "epochs_completed": 4,
+    "resumed_from_epoch": 0,
+    "total_seconds": 1657.014337369008,
+    "history": [
+      {
+        "epoch": 1,
+        "learning_rate": 0.001,
+        "train": {
+          "loss": 0.19540195648444725,
+          "ctr_loss": 0.16069923187984933,
+          "cvr_loss": 0.03470272460459792,
+          "samples": 42299905.0,
+          "clicked_samples": 1644256.0,
+          "conversion_positives": 8802.0,
+          "seconds": 330.7218578699976
+        },
+        "validation": {
+          "ctr": {
+            "auc": 0.6152087569568174,
+            "log_loss": 0.16310553485722898,
+            "pr_auc": 0.059830670651945986,
+            "prediction_mean": 0.05278104739333148,
+            "samples": 4263506.0,
+            "positives": 165368.0,
+            "positive_rate": 0.03878685757683934,
+            "gauc": 0.5834247848032517,
+            "gauc_details": {
+              "weighting": "impressions",
+              "total_samples": 4263506,
+              "known_user_samples": 4254340,
+              "missing_user_samples": 9166,
+              "known_user_sample_fraction": 0.9978501261637722,
+              "total_users": 252850,
+              "eligible_users": 89826,
+              "skipped_single_class_users": 163024,
+              "skipped_all_negative_users": 161434,
+              "skipped_all_positive_users": 1590,
+              "eligible_impressions": 2512773,
+              "eligible_impression_fraction": 0.5893677644642695
+            }
+          },
+          "cvr": {
+            "auc": 0.6640613975734764,
+            "log_loss": 0.035389399873458495,
+            "pr_auc": 0.011458395696502538,
+            "prediction_mean": 0.011515230999736977,
+            "samples": 165368.0,
+            "positives": 908.0,
+            "positive_rate": 0.005490784190411688,
+            "gauc": 0.6339988962708208,
+            "gauc_details": {
+              "weighting": "impressions",
+              "total_samples": 165368,
+              "known_user_samples": 165087,
+              "missing_user_samples": 281,
+              "known_user_sample_fraction": 0.9983007595181655,
+              "total_users": 91416,
+              "eligible_users": 492,
+              "skipped_single_class_users": 90924,
+              "skipped_all_negative_users": 90524,
+              "skipped_all_positive_users": 400,
+              "eligible_impressions": 1699,
+              "eligible_impression_fraction": 0.01027405543998839
+            }
+          },
+          "ctcvr": {
+            "auc": 0.6406962116574216,
+            "log_loss": 0.002147045241790769,
+            "pr_auc": 0.00040409371651912047,
+            "prediction_mean": 0.0005714272607969165,
+            "samples": 4263506.0,
+            "positives": 908.0,
+            "positive_rate": 0.00021297026437865925,
+            "gauc": 0.6016215531283422,
+            "gauc_details": {
+              "weighting": "impressions",
+              "total_samples": 4263506,
+              "known_user_samples": 4254340,
+              "missing_user_samples": 9166,
+              "known_user_sample_fraction": 0.9978501261637722,
+              "total_users": 252850,
+              "eligible_users": 853,
+              "skipped_single_class_users": 251997,
+              "skipped_all_negative_users": 251958,
+              "skipped_all_positive_users": 39,
+              "eligible_impressions": 27086,
+              "eligible_impression_fraction": 0.006352987423965159
+            }
+          },
+          "seconds": 49.380117376102135
+        }
+      },
+      {
+        "epoch": 2,
+        "learning_rate": 0.001,
+        "train": {
+          "loss": 0.18167144914039915,
+          "ctr_loss": 0.15558103776831222,
+          "cvr_loss": 0.026090411372086928,
+          "samples": 42299905.0,
+          "clicked_samples": 1644256.0,
+          "conversion_positives": 8802.0,
+          "seconds": 384.4180736260023
+        },
+        "validation": {
+          "ctr": {
+            "auc": 0.620621256111469,
+            "log_loss": 0.16233788886921455,
+            "pr_auc": 0.06117963583790644,
+            "prediction_mean": 0.05071939870337543,
+            "samples": 4263506.0,
+            "positives": 165368.0,
+            "positive_rate": 0.03878685757683934,
+            "gauc": 0.5860880559730098,
+            "gauc_details": {
+              "weighting": "impressions",
+              "total_samples": 4263506,
+              "known_user_samples": 4254340,
+              "missing_user_samples": 9166,
+              "known_user_sample_fraction": 0.9978501261637722,
+              "total_users": 252850,
+              "eligible_users": 89826,
+              "skipped_single_class_users": 163024,
+              "skipped_all_negative_users": 161434,
+              "skipped_all_positive_users": 1590,
+              "eligible_impressions": 2512773,
+              "eligible_impression_fraction": 0.5893677644642695
+            }
+          },
+          "cvr": {
+            "auc": 0.6617094103462888,
+            "log_loss": 0.03566146390309775,
+            "pr_auc": 0.010970644548922787,
+            "prediction_mean": 0.0038250613746608005,
+            "samples": 165368.0,
+            "positives": 908.0,
+            "positive_rate": 0.005490784190411688,
+            "gauc": 0.6307966655671188,
+            "gauc_details": {
+              "weighting": "impressions",
+              "total_samples": 165368,
+              "known_user_samples": 165087,
+              "missing_user_samples": 281,
+              "known_user_sample_fraction": 0.9983007595181655,
+              "total_users": 91416,
+              "eligible_users": 492,
+              "skipped_single_class_users": 90924,
+              "skipped_all_negative_users": 90524,
+              "skipped_all_positive_users": 400,
+              "eligible_impressions": 1699,
+              "eligible_impression_fraction": 0.01027405543998839
+            }
+          },
+          "ctcvr": {
+            "auc": 0.6456899108424234,
+            "log_loss": 0.0020756992418248473,
+            "pr_auc": 0.000425782425398094,
+            "prediction_mean": 0.00017963933034468435,
+            "samples": 4263506.0,
+            "positives": 908.0,
+            "positive_rate": 0.00021297026437865925,
+            "gauc": 0.6040800362259635,
+            "gauc_details": {
+              "weighting": "impressions",
+              "total_samples": 4263506,
+              "known_user_samples": 4254340,
+              "missing_user_samples": 9166,
+              "known_user_sample_fraction": 0.9978501261637722,
+              "total_users": 252850,
+              "eligible_users": 853,
+              "skipped_single_class_users": 251997,
+              "skipped_all_negative_users": 251958,
+              "skipped_all_positive_users": 39,
+              "eligible_impressions": 27086,
+              "eligible_impression_fraction": 0.006352987423965159
+            }
+          },
+          "seconds": 45.41079042595811
+        }
+      },
+      {
+        "epoch": 3,
+        "learning_rate": 0.001,
+        "train": {
+          "loss": 0.1748198706972101,
+          "ctr_loss": 0.1537921336302151,
+          "cvr_loss": 0.021027737066995008,
+          "samples": 42299905.0,
+          "clicked_samples": 1644256.0,
+          "conversion_positives": 8802.0,
+          "seconds": 376.223731522914
+        },
+        "validation": {
+          "ctr": {
+            "auc": 0.6176351205789102,
+            "log_loss": 0.1618808485693254,
+            "pr_auc": 0.06053501209233329,
+            "prediction_mean": 0.048045707788261276,
+            "samples": 4263506.0,
+            "positives": 165368.0,
+            "positive_rate": 0.03878685757683934,
+            "gauc": 0.5856091337237321,
+            "gauc_details": {
+              "weighting": "impressions",
+              "total_samples": 4263506,
+              "known_user_samples": 4254340,
+              "missing_user_samples": 9166,
+              "known_user_sample_fraction": 0.9978501261637722,
+              "total_users": 252850,
+              "eligible_users": 89826,
+              "skipped_single_class_users": 163024,
+              "skipped_all_negative_users": 161434,
+              "skipped_all_positive_users": 1590,
+              "eligible_impressions": 2512773,
+              "eligible_impression_fraction": 0.5893677644642695
+            }
+          },
+          "cvr": {
+            "auc": 0.6600987091112764,
+            "log_loss": 0.03599914891108988,
+            "pr_auc": 0.010575162199447364,
+            "prediction_mean": 0.006653136048531026,
+            "samples": 165368.0,
+            "positives": 908.0,
+            "positive_rate": 0.005490784190411688,
+            "gauc": 0.6101315612645807,
+            "gauc_details": {
+              "weighting": "impressions",
+              "total_samples": 165368,
+              "known_user_samples": 165087,
+              "missing_user_samples": 281,
+              "known_user_sample_fraction": 0.9983007595181655,
+              "total_users": 91416,
+              "eligible_users": 492,
+              "skipped_single_class_users": 90924,
+              "skipped_all_negative_users": 90524,
+              "skipped_all_positive_users": 400,
+              "eligible_impressions": 1699,
+              "eligible_impression_fraction": 0.01027405543998839
+            }
+          },
+          "ctcvr": {
+            "auc": 0.6394097486694806,
+            "log_loss": 0.00212101084025482,
+            "pr_auc": 0.00036036930588772496,
+            "prediction_mean": 0.00031701963425911087,
+            "samples": 4263506.0,
+            "positives": 908.0,
+            "positive_rate": 0.00021297026437865925,
+            "gauc": 0.6030670320920687,
+            "gauc_details": {
+              "weighting": "impressions",
+              "total_samples": 4263506,
+              "known_user_samples": 4254340,
+              "missing_user_samples": 9166,
+              "known_user_sample_fraction": 0.9978501261637722,
+              "total_users": 252850,
+              "eligible_users": 853,
+              "skipped_single_class_users": 251997,
+              "skipped_all_negative_users": 251958,
+              "skipped_all_positive_users": 39,
+              "eligible_impressions": 27086,
+              "eligible_impression_fraction": 0.006352987423965159
+            }
+          },
+          "seconds": 47.383549582911655
+        }
+      },
+      {
+        "epoch": 4,
+        "learning_rate": 0.001,
+        "train": {
+          "loss": 0.16887109550628168,
+          "ctr_loss": 0.15285863453907325,
+          "cvr_loss": 0.01601246096720843,
+          "samples": 42299905.0,
+          "clicked_samples": 1644256.0,
+          "conversion_positives": 8802.0,
+          "seconds": 368.33515708497725
+        },
+        "validation": {
+          "ctr": {
+            "auc": 0.6133593695314203,
+            "log_loss": 0.16427537160533462,
+            "pr_auc": 0.05993541090582505,
+            "prediction_mean": 0.05564039027022528,
+            "samples": 4263506.0,
+            "positives": 165368.0,
+            "positive_rate": 0.03878685757683934,
+            "gauc": 0.5832997757366666,
+            "gauc_details": {
+              "weighting": "impressions",
+              "total_samples": 4263506,
+              "known_user_samples": 4254340,
+              "missing_user_samples": 9166,
+              "known_user_sample_fraction": 0.9978501261637722,
+              "total_users": 252850,
+              "eligible_users": 89826,
+              "skipped_single_class_users": 163024,
+              "skipped_all_negative_users": 161434,
+              "skipped_all_positive_users": 1590,
+              "eligible_impressions": 2512773,
+              "eligible_impression_fraction": 0.5893677644642695
+            }
+          },
+          "cvr": {
+            "auc": 0.6200196806154008,
+            "log_loss": 0.04466995521243593,
+            "pr_auc": 0.008460904003850758,
+            "prediction_mean": 0.014005443941170842,
+            "samples": 165368.0,
+            "positives": 908.0,
+            "positive_rate": 0.005490784190411688,
+            "gauc": 0.5748481474055341,
+            "gauc_details": {
+              "weighting": "impressions",
+              "total_samples": 165368,
+              "known_user_samples": 165087,
+              "missing_user_samples": 281,
+              "known_user_sample_fraction": 0.9983007595181655,
+              "total_users": 91416,
+              "eligible_users": 492,
+              "skipped_single_class_users": 90924,
+              "skipped_all_negative_users": 90524,
+              "skipped_all_positive_users": 400,
+              "eligible_impressions": 1699,
+              "eligible_impression_fraction": 0.01027405543998839
+            }
+          },
+          "ctcvr": {
+            "auc": 0.6103525939216822,
+            "log_loss": 0.0025257565522722645,
+            "pr_auc": 0.0003028882365324669,
+            "prediction_mean": 0.00074152509992589,
+            "samples": 4263506.0,
+            "positives": 908.0,
+            "positive_rate": 0.00021297026437865925,
+            "gauc": 0.5600619860061441,
+            "gauc_details": {
+              "weighting": "impressions",
+              "total_samples": 4263506,
+              "known_user_samples": 4254340,
+              "missing_user_samples": 9166,
+              "known_user_sample_fraction": 0.9978501261637722,
+              "total_users": 252850,
+              "eligible_users": 853,
+              "skipped_single_class_users": 251997,
+              "skipped_all_negative_users": 251958,
+              "skipped_all_positive_users": 39,
+              "eligible_impressions": 27086,
+              "eligible_impression_fraction": 0.006352987423965159
+            }
+          },
+          "seconds": 46.97869191295467
+        }
+      }
+    ]
+  },
+  "test": {
+    "ctr": {
+      "auc": 0.6204902015680972,
+      "log_loss": 0.16248148565526094,
+      "pr_auc": 0.060994176166337614,
+      "prediction_mean": 0.050721842163021176,
+      "samples": 38353110.0,
+      "positives": 1489192.0,
+      "positive_rate": 0.03882845485020641,
+      "gauc": 0.5866690487053839,
+      "gauc_details": {
+        "weighting": "impressions",
+        "total_samples": 38353110,
+        "known_user_samples": 38269804,
+        "missing_user_samples": 83306,
+        "known_user_sample_fraction": 0.9978279206040919,
+        "total_users": 292306,
+        "eligible_users": 210253,
+        "skipped_single_class_users": 82053,
+        "skipped_all_negative_users": 81822,
+        "skipped_all_positive_users": 231,
+        "eligible_impressions": 36020539,
+        "eligible_impression_fraction": 0.9391816986940563
+      }
+    },
+    "cvr": {
+      "auc": 0.6704436474142064,
+      "log_loss": 0.03518450907786477,
+      "pr_auc": 0.01187875951167651,
+      "prediction_mean": 0.0038272197420393724,
+      "samples": 1489192.0,
+      "positives": 8160.0,
+      "positive_rate": 0.005479481490633847,
+      "gauc": 0.6196738450947982,
+      "gauc_details": {
+        "weighting": "impressions",
+        "total_samples": 1489192,
+        "known_user_samples": 1486726,
+        "missing_user_samples": 2466,
+        "known_user_sample_fraction": 0.9983440684612864,
+        "total_users": 210484,
+        "eligible_users": 6680,
+        "skipped_single_class_users": 203804,
+        "skipped_all_negative_users": 203145,
+        "skipped_all_positive_users": 659,
+        "eligible_impressions": 86064,
+        "eligible_impression_fraction": 0.05779241360415581
+      }
+    },
+    "ctcvr": {
+      "auc": 0.6568055679878494,
+      "log_loss": 0.002058012517844366,
+      "pr_auc": 0.00041771567581474236,
+      "prediction_mean": 0.00017954668150474475,
+      "samples": 38353110.0,
+      "positives": 8160.0,
+      "positive_rate": 0.00021275979966161806,
+      "gauc": 0.6053912041994188,
+      "gauc_details": {
+        "weighting": "impressions",
+        "total_samples": 38353110,
+        "known_user_samples": 38269804,
+        "missing_user_samples": 83306,
+        "known_user_sample_fraction": 0.9978279206040919,
+        "total_users": 292306,
+        "eligible_users": 7332,
+        "skipped_single_class_users": 284974,
+        "skipped_all_negative_users": 284967,
+        "skipped_all_positive_users": 7,
+        "eligible_impressions": 1839878,
+        "eligible_impression_fraction": 0.04797206797571305
+      }
+    },
+    "seconds": 355.46444723312743
+  },
+  "checkpoint": "/root/autodl-tmp/multi-task-ads-ranking/results/shared_bottom_aliccp_full_20260914_164805/best.pt",
+  "latest_checkpoint": "/root/autodl-tmp/multi-task-ads-ranking/results/shared_bottom_aliccp_full_20260914_164805/latest.pt",
+  "resumed_from": null
+}
