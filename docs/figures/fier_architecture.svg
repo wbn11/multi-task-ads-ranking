@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="860" viewBox="0 0 1200 860" role="img" aria-labelledby="title desc">
-  <title id="title">FIER 模型结构：显式特征交叉、独立专家、双任务门控与点击转化概率</title>
+  <title id="title">FIER 方案结构：显式特征交叉、独立专家、双任务门控与点击转化概率</title>
   <desc id="desc">23 个稀疏字段经 16 维 Embedding 和加权池化拼接为 368 维，经过三层 DCNv2 Matrix Cross 与 LayerNorm。交叉表示分别进入 CTR 专家、共享专家 1、共享专家 2、CVR 专家；CTR Gate 融合两个共享专家和 CTR 专家，CVR Gate 融合两个共享专家和 CVR 专家。任务塔输出 pCTR、pCVR，其乘积为 pCTCVR。</desc>
   <defs>
     <marker id="arrow-neutral" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">

@@ -3,8 +3,9 @@
 广告精排需要判断一次曝光能否带来点击，以及点击后是否产生转化。本项目基于
 [Ali-CCP](https://tianchi.aliyun.com/dataset/408) 原始曝光数据，构建从流式预处理、
 稀疏特征编码到 CTR/CVR/CTCVR 训练、评估与概率校准的完整离线流程。
-核心方案 FIER 将 DCNv2 显式特征交叉、PLE 任务专家与 ESMM 全曝光训练目标结合，
-并用同条件对照、负采样和多随机种子实验检验它的收益与局限。
+核心方案 FIER（Feature Interaction and Expert Routing）以 DCNv2 显式特征交叉和
+PLE 任务专家路由为主体，结合 ESMM 全曝光监督，联合预估 CTR、点击后 CVR 与 CTCVR。
+项目通过同条件对照、负采样和多随机种子实验检验这一方案的收益与局限。
 
 ## 1. 问题定义
 
@@ -48,7 +49,7 @@ sample_skeleton（曝光、标签、sample 侧特征）
 原始文件没有显式时间戳，因而这里**不是时间切分**。
 词表只拟合 Train，验证与测试中的未见 token 映射为 UNK。
 
-## 3. FIER 模型
+## 3. FIER 方案结构
 
 ```text
 23 个字段 → 16 维 Embedding / 字段加权均值 → 拼接输入 x₀
@@ -69,7 +70,7 @@ sample_skeleton（曝光、标签、sample 侧特征）
 两侧使用的是**同一组**共享专家，并非各自复制两份。下图将 2 个共享专家、
 1 个 CTR 专家和 1 个 CVR 专家分别画出，展示它们如何进入两个 Gate：
 
-![FIER 模型结构图：DCNv2 交叉网络、四个独立专家、双任务 Gate 与 CTCVR 乘积](docs/figures/fier_architecture.svg)
+![FIER 方案结构图：DCNv2 交叉网络、四个独立专家、双任务 Gate 与 CTCVR 乘积](docs/figures/fier_architecture.svg)
 
 DCNv2 Cross 学习显式特征交互；两个任务的 Gate 分别融合共享专家与本任务专家。
 这里实现的是**单层** PLE 式路由，而非原论文的完整多层结构。两个输出满足
