@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="860" viewBox="0 0 1200 860" role="img" aria-labelledby="title desc">
+  <title id="title">FIER 模型结构：显式特征交叉、独立专家、双任务门控与点击转化概率</title>
+  <desc id="desc">23 个稀疏字段经 16 维 Embedding 和加权池化拼接为 368 维，经过三层 DCNv2 Matrix Cross 与 LayerNorm。交叉表示分别进入 CTR 专家、共享专家 1、共享专家 2、CVR 专家；CTR Gate 融合两个共享专家和 CTR 专家，CVR Gate 融合两个共享专家和 CVR 专家。任务塔输出 pCTR、pCVR，其乘积为 pCTCVR。</desc>
+  <defs>
+    <marker id="arrow-neutral" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#60758b"/>
+    </marker>
+    <marker id="arrow-ctr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#b96720"/>
+    </marker>
+    <marker id="arrow-cvr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7855a4"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="860" fill="#ffffff"/>
+
+  <g font-family="Arial, Microsoft YaHei, Noto Sans CJK SC, sans-serif" text-anchor="middle">
+    <rect x="380" y="28" width="440" height="72" rx="12" fill="#f5f8fc" stroke="#a9b9cb" stroke-width="1.5"/>
+    <text x="600" y="58" font-size="21" font-weight="700" fill="#1b2b3c">曝光特征 Batch</text>
+    <text x="600" y="82" font-size="16" fill="#52667b">23 个字段 · ids / values / offsets</text>
+
+    <path d="M 600 101 V 135" stroke="#60758b" stroke-width="2" fill="none" marker-end="url(#arrow-neutral)"/>
+    <rect x="380" y="143" width="440" height="72" rx="12" fill="#f5f8fc" stroke="#a9b9cb" stroke-width="1.5"/>
+    <text x="600" y="173" font-size="21" font-weight="700" fill="#1b2b3c">Field Embedding + 加权池化</text>
+    <text x="600" y="197" font-size="16" fill="#52667b">每字段 16 维 · 拼接为 368 维</text>
+
+    <path d="M 600 216 V 248" stroke="#60758b" stroke-width="2" fill="none" marker-end="url(#arrow-neutral)"/>
+    <rect x="380" y="256" width="440" height="76" rx="12" fill="#edf3fb" stroke="#6f93c0" stroke-width="1.7"/>
+    <text x="600" y="286" font-size="21" font-weight="700" fill="#1b2b3c">DCNv2 Matrix Cross × 3</text>
+    <text x="600" y="311" font-size="16" fill="#52667b">LayerNorm · 交叉表示 z（368 维）</text>
+
+    <path d="M 600 333 V 361 M 175 361 H 1025" stroke="#60758b" stroke-width="2" fill="none"/>
+    <path d="M 175 361 V 380 M 455 361 V 380 M 745 361 V 380 M 1025 361 V 380" stroke="#60758b" stroke-width="2" fill="none" marker-end="url(#arrow-neutral)"/>
+
+    <rect x="65" y="389" width="220" height="83" rx="12" fill="#fff2e5" stroke="#ca8139" stroke-width="1.7"/>
+    <text x="175" y="423" font-size="20" font-weight="700" fill="#754214">CTR 专属专家</text>
+    <text x="175" y="448" font-size="15" fill="#795c42">MLP 256 → 128</text>
+
+    <rect x="345" y="389" width="220" height="83" rx="12" fill="#eaf4ff" stroke="#5b91c7" stroke-width="1.7"/>
+    <text x="455" y="423" font-size="20" font-weight="700" fill="#234f79">共享专家 1</text>
+    <text x="455" y="448" font-size="15" fill="#4d6882">MLP 256 → 128</text>
+
+    <rect x="635" y="389" width="220" height="83" rx="12" fill="#eaf4ff" stroke="#5b91c7" stroke-width="1.7"/>
+    <text x="745" y="423" font-size="20" font-weight="700" fill="#234f79">共享专家 2</text>
+    <text x="745" y="448" font-size="15" fill="#4d6882">MLP 256 → 128</text>
+
+    <rect x="915" y="389" width="220" height="83" rx="12" fill="#f3ecfb" stroke="#9c79c2" stroke-width="1.7"/>
+    <text x="1025" y="423" font-size="20" font-weight="700" fill="#604386">CVR 专属专家</text>
+    <text x="1025" y="448" font-size="15" fill="#6d5982">MLP 256 → 128</text>
+
+    <path d="M 455 473 V 495 H 340 V 574" stroke="#5b91c7" stroke-width="2.3" fill="none" marker-end="url(#arrow-neutral)"/>
+    <path d="M 455 495 H 800 V 574" stroke="#5b91c7" stroke-width="2.3" fill="none" marker-end="url(#arrow-neutral)"/>
+    <path d="M 745 473 V 520 H 400 V 574" stroke="#5b91c7" stroke-width="2.3" fill="none" marker-end="url(#arrow-neutral)"/>
+    <path d="M 745 520 H 860 V 574" stroke="#5b91c7" stroke-width="2.3" fill="none" marker-end="url(#arrow-neutral)"/>
+    <path d="M 175 473 V 558 H 285 V 574" stroke="#b96720" stroke-width="2.3" fill="none" marker-end="url(#arrow-ctr)"/>
+    <path d="M 1025 473 V 558 H 915 V 574" stroke="#7855a4" stroke-width="2.3" fill="none" marker-end="url(#arrow-cvr)"/>
+
+    <rect x="185" y="582" width="330" height="75" rx="12" fill="#fff8f0" stroke="#ca8139" stroke-width="1.7"/>
+    <text x="350" y="611" font-size="21" font-weight="700" fill="#754214">CTR Gate</text>
+    <text x="350" y="638" font-size="15" fill="#795c42">z 生成权重 · 融合 S1 / S2 / CTR 专家</text>
+
+    <rect x="685" y="582" width="330" height="75" rx="12" fill="#f9f5fd" stroke="#9c79c2" stroke-width="1.7"/>
+    <text x="850" y="611" font-size="21" font-weight="700" fill="#604386">CVR Gate</text>
+    <text x="850" y="638" font-size="15" fill="#6d5982">z 生成权重 · 融合 S1 / S2 / CVR 专家</text>
+
+    <path d="M 350 658 V 685" stroke="#b96720" stroke-width="2.3" fill="none" marker-end="url(#arrow-ctr)"/>
+    <path d="M 850 658 V 685" stroke="#7855a4" stroke-width="2.3" fill="none" marker-end="url(#arrow-cvr)"/>
+    <rect x="185" y="693" width="330" height="67" rx="12" fill="#fff2e5" stroke="#ca8139" stroke-width="1.7"/>
+    <text x="350" y="721" font-size="20" font-weight="700" fill="#754214">CTR Tower → pCTR</text>
+    <text x="350" y="746" font-size="15" fill="#795c42">P(click = 1 | x)</text>
+
+    <rect x="685" y="693" width="330" height="67" rx="12" fill="#f3ecfb" stroke="#9c79c2" stroke-width="1.7"/>
+    <text x="850" y="721" font-size="20" font-weight="700" fill="#604386">CVR Tower → pCVR</text>
+    <text x="850" y="746" font-size="15" fill="#6d5982">P(conversion = 1 | click = 1, x)</text>
+
+    <path d="M 350 761 V 784 H 533 V 796" stroke="#b96720" stroke-width="2.3" fill="none" marker-end="url(#arrow-ctr)"/>
+    <path d="M 850 761 V 784 H 667 V 796" stroke="#7855a4" stroke-width="2.3" fill="none" marker-end="url(#arrow-cvr)"/>
+    <rect x="455" y="805" width="290" height="48" rx="12" fill="#eaf7f4" stroke="#5b9c8e" stroke-width="1.7"/>
+    <text x="600" y="836" font-size="21" font-weight="700" fill="#226155">pCTCVR = pCTR × pCVR</text>
+  </g>
+</svg>

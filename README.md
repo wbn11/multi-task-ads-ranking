@@ -51,17 +51,25 @@ sample_skeleton（曝光、标签、sample 侧特征）
 ## 3. FIER 模型
 
 ```text
-23 个字段的 ids / values / offsets
-    ↓ 每字段 16 维 Embedding；多值特征按权重池化
-拼接为 368 维向量
-    ↓ 3 层 DCNv2 Matrix Cross → LayerNorm
-共享专家 × 2 + CTR 专家 × 1 + CVR 专家 × 1
-    ├─ CTR Gate（共享 + CTR 专家）→ CTR Tower → pCTR
-    └─ CVR Gate（共享 + CVR 专家）→ CVR Tower → pCVR
-pCTR ─┐
-      × → pCTCVR
-pCVR ─┘
+23 个字段 → 16 维 Embedding / 字段加权均值 → 拼接输入 x₀
+                                            ↓
+                                3 层 DCNv2 Matrix Cross
+                                            ↓
+                                        LayerNorm
+                                            ↓
+                          单层 PLE 式专家与任务 Gate
+                    ┌───────────────────────┴───────────────────────┐
+             共享专家 ×2 + CTR 专家 ×1                    共享专家 ×2 + CVR 专家 ×1
+                    ↓                                               ↓
+              CTR Tower → pCTR                                 CVR Tower → pCVR
+                    └───────────────────────┬───────────────────────┘
+                                        pCTCVR = pCTR × pCVR
 ```
+
+两侧使用的是**同一组**共享专家，并非各自复制两份。下图将 2 个共享专家、
+1 个 CTR 专家和 1 个 CVR 专家分别画出，展示它们如何进入两个 Gate：
+
+![FIER 模型结构图：DCNv2 交叉网络、四个独立专家、双任务 Gate 与 CTCVR 乘积](docs/figures/fier_architecture.svg)
 
 DCNv2 Cross 学习显式特征交互；两个任务的 Gate 分别融合共享专家与本任务专家。
 这里实现的是**单层** PLE 式路由，而非原论文的完整多层结构。两个输出满足
