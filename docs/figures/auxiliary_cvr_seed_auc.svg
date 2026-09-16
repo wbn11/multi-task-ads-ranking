@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500" role="img" aria-labelledby="title desc">
+  <title id="title">辅助 CVR 负采样在三个随机种子下的 Test CTCVR AUC</title>
+  <desc id="desc">同一组 seed 配对比较默认 FIER 和加入点击空间辅助 CVR 负采样损失的方案。2026 年实验种子 AUC 从 0.677874 降至 0.676627，2027 从 0.669411 升至 0.680951，2028 从 0.660807 降至 0.655930。纵轴截取 0.64 到 0.69。</desc>
+  <rect width="1024" height="500" fill="#ffffff"/>
+  <g font-family="Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif">
+    <text x="65" y="40" fill="#233042" font-size="22" font-weight="700">辅助 CVR 负采样：三 seed 配对对照</text>
+    <text x="65" y="65" fill="#66788c" font-size="13">全曝光主损失不变；额外点击空间 CVR 1:20，损失权重 0.02</text>
+    <circle cx="712" cy="62" r="6" fill="#19858f"/>
+    <text x="725" y="67" fill="#233042" font-size="13">默认 FIER</text>
+    <rect x="829" y="56" width="12" height="12" fill="#de8941"/>
+    <text x="850" y="67" fill="#233042" font-size="13">+ 辅助 CVR</text>
+
+    <g stroke="#e6ebf1" stroke-width="1">
+      <line x1="130" y1="120" x2="900" y2="120"/>
+      <line x1="130" y1="170" x2="900" y2="170"/>
+      <line x1="130" y1="220" x2="900" y2="220"/>
+      <line x1="130" y1="270" x2="900" y2="270"/>
+      <line x1="130" y1="320" x2="900" y2="320"/>
+      <line x1="130" y1="370" x2="900" y2="370"/>
+      <line x1="245" y1="120" x2="245" y2="370"/>
+      <line x1="520" y1="120" x2="520" y2="370"/>
+      <line x1="795" y1="120" x2="795" y2="370"/>
+    </g>
+    <g fill="#66788c" font-size="13" text-anchor="end">
+      <text x="117" y="125">0.69</text><text x="117" y="175">0.68</text>
+      <text x="117" y="225">0.67</text><text x="117" y="275">0.66</text>
+      <text x="117" y="325">0.65</text><text x="117" y="375">0.64</text>
+    </g>
+    <text x="65" y="103" fill="#233042" font-size="14">Test CTCVR AUC</text>
+
+    <polyline points="245,180.63 520,222.94 795,265.96" fill="none" stroke="#19858f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="245,186.86 520,165.24 795,290.35" fill="none" stroke="#de8941" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+    <g fill="#19858f">
+      <circle cx="245" cy="180.63" r="7"/>
+      <circle cx="520" cy="222.94" r="7"/>
+      <circle cx="795" cy="265.96" r="7"/>
+    </g>
+    <g fill="#de8941">
+      <rect x="238" y="179.86" width="14" height="14"/>
+      <rect x="513" y="158.24" width="14" height="14"/>
+      <rect x="788" y="283.35" width="14" height="14"/>
+    </g>
+    <g fill="#233042" font-size="13">
+      <text x="230" y="159" text-anchor="end">0.6779</text>
+      <text x="264" y="210">0.6766</text>
+      <text x="506" y="245" text-anchor="end">0.6694</text>
+      <text x="539" y="149">0.6810</text>
+      <text x="781" y="253" text-anchor="end">0.6608</text>
+      <text x="814" y="296">0.6559</text>
+    </g>
+    <g fill="#233042" font-size="14" text-anchor="middle">
+      <text x="245" y="402">2026</text><text x="520" y="402">2027</text><text x="795" y="402">2028</text>
+    </g>
+    <g fill="#66788c" font-size="13" text-anchor="middle">
+      <text x="245" y="428">差值 −0.001247</text>
+      <text x="520" y="428">差值 +0.011540</text>
+      <text x="795" y="428">差值 −0.004877</text>
+    </g>
+    <text x="65" y="471" fill="#66788c" font-size="12">差值 = 辅助 CVR − 默认 FIER；纵轴从 0.64 起，放大了小幅差异。两个 seed 下降，一个 seed 上升。</text>
+  </g>
+</svg>

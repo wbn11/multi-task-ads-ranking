@@ -8,14 +8,14 @@ FIER（代码名 `dcn_ple_esmm`）训练 → CTR/CVR/CTCVR 评估与校准。
 ## 1. 环境和原始文件
 
 本项目的已验证服务器环境使用 Python 3.12、PyTorch 2.7.1+cu126 与 CUDA GPU。
-`requirements-a6000.txt` 固定了相应 PyTorch wheel；其他驱动或 CUDA 环境应先核对兼容性。
+`requirements.txt` 包含相应 PyTorch wheel；目标机器的驱动需要与该 CUDA 构建兼容。
 虚拟环境必须在目标机器上新建，不能直接复制 Windows 的 `.venv`。
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -r requirements-a6000.txt
+python -m pip install -r requirements.txt
 python -c "import torch, pyarrow; print(torch.__version__, torch.cuda.is_available(), pyarrow.__version__)"
 ```
 
@@ -85,7 +85,7 @@ python scripts/overfit_dcn_ple_esmm.py \
 最后用该模型在 Test 上计算未经额外校准的指标。
 
 ```bash
-OMP_NUM_THREADS=1 python scripts/train_dcn_ple_esmm.py \
+python scripts/train_dcn_ple_esmm.py \
   --config configs/dcn_ple_esmm.yaml \
   --device cuda --batch-size 8192 --num-workers 8
 ```
@@ -111,7 +111,7 @@ OMP_NUM_THREADS=1 python scripts/train_dcn_ple_esmm.py \
 比较时保持模型、数据和其余训练参数一致。
 
 ```bash
-OMP_NUM_THREADS=1 python scripts/train_dcn_ple_esmm.py \
+python scripts/train_dcn_ple_esmm.py \
   --config configs/dcn_ple_esmm.yaml --device cuda \
   --seed 2027 --dropout 0.2 --gate-dropout 0 \
   --batch-size 8192 --num-workers 8 \
@@ -128,13 +128,13 @@ dropout/seed 的全样本运行比较：
 
 ```bash
 # 对未点击曝光做 1:5 训练负采样
-OMP_NUM_THREADS=1 python scripts/train_dcn_ple_esmm.py \
+python scripts/train_dcn_ple_esmm.py \
   --config configs/dcn_ple_esmm.yaml --device cuda \
   --seed 2026 --dropout 0.1 --negative-sampling-ratio 5 \
   --run-name "negative_1_5_$(date +%Y%m%d_%H%M%S)"
 
 # 保留全部曝光，仅对点击空间辅助 CVR 损失做 1:20 采样
-OMP_NUM_THREADS=1 python scripts/train_dcn_ple_esmm.py \
+python scripts/train_dcn_ple_esmm.py \
   --config configs/dcn_ple_esmm.yaml --device cuda \
   --seed 2026 --dropout 0.2 --no-negative-sampling \
   --auxiliary-cvr-weight 0.02 --auxiliary-cvr-negative-ratio 20 \
@@ -155,7 +155,7 @@ AUC、LogLoss、Brier Score、ECE 与分箱曲线；训练集负采样的运行�
 
 ```bash
 RUN_DIR="results/dcn_ple_esmm_aliccp_full_<实际运行后缀>"
-OMP_NUM_THREADS=1 python scripts/evaluate_multitask.py \
+python scripts/evaluate_multitask.py \
   --run-directory "$RUN_DIR" --device cuda \
   --batch-size 8192 --num-workers 8 --calibration-bins 20
 ```
@@ -177,7 +177,7 @@ python scripts/summarize_results.py
 训练意外中断时，从同一运行目录的 `latest.pt` 继续；恢复时不要再传 `--run-name`。
 
 ```bash
-OMP_NUM_THREADS=1 python scripts/train_dcn_ple_esmm.py \
+python scripts/train_dcn_ple_esmm.py \
   --config configs/dcn_ple_esmm.yaml --device cuda \
   --resume-from "results/dcn_ple_esmm_aliccp_full_<实际运行后缀>/latest.pt"
 ```

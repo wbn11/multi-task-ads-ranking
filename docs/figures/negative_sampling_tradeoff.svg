@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="470" viewBox="0 0 1024 470" role="img" aria-labelledby="title desc">
+  <title id="title">未点击曝光负采样的耗时与排序质量</title>
+  <desc id="desc">全样本、1:5、1:10、1:20 四次实验的 fit 耗时分别约为 48.0、10.6、15.5、30.9 分钟；完成轮次分别是 6、4、4、5；Test CTCVR AUC 分别为 0.672664、0.658952、0.652472、0.670302。耗时不是同机同轮次标准化基准，AUC 坐标从 0.64 开始。</desc>
+  <rect width="1024" height="470" fill="#ffffff"/>
+  <g font-family="Microsoft YaHei, Noto Sans CJK SC, Arial, sans-serif">
+    <text x="60" y="40" fill="#233042" font-size="22" font-weight="700">未点击曝光负采样：成本与排序质量</text>
+    <text x="60" y="65" fill="#66788c" font-size="13">固定 seed 2026、dropout 0.1；Validation / Test 均保持原始分布</text>
+    <text x="200" y="108" fill="#233042" font-size="16" font-weight="600">fit 耗时（分钟）</text>
+    <text x="700" y="108" fill="#233042" font-size="16" font-weight="600">Test CTCVR AUC</text>
+
+    <g stroke="#e6ebf1" stroke-width="1">
+      <line x1="200" y1="125" x2="200" y2="392"/>
+      <line x1="280" y1="125" x2="280" y2="392"/>
+      <line x1="360" y1="125" x2="360" y2="392"/>
+      <line x1="440" y1="125" x2="440" y2="392"/>
+      <line x1="520" y1="125" x2="520" y2="392"/>
+      <line x1="600" y1="125" x2="600" y2="392"/>
+      <line x1="700" y1="125" x2="700" y2="392"/>
+      <line x1="805" y1="125" x2="805" y2="392"/>
+      <line x1="910" y1="125" x2="910" y2="392"/>
+    </g>
+    <g fill="#66788c" font-size="12" text-anchor="middle">
+      <text x="200" y="413">0</text><text x="280" y="413">10</text>
+      <text x="360" y="413">20</text><text x="440" y="413">30</text>
+      <text x="520" y="413">40</text><text x="600" y="413">50</text>
+      <text x="700" y="413">0.64</text><text x="805" y="413">0.66</text>
+      <text x="910" y="413">0.68</text>
+    </g>
+    <g fill="#233042" font-size="15" text-anchor="end">
+      <text x="177" y="159">全样本</text>
+      <text x="177" y="224">1 : 5</text>
+      <text x="177" y="289">1 : 10</text>
+      <text x="177" y="354">1 : 20</text>
+    </g>
+    <g fill="#f0f3f7">
+      <rect x="200" y="139" width="400" height="26" rx="3"/>
+      <rect x="200" y="204" width="400" height="26" rx="3"/>
+      <rect x="200" y="269" width="400" height="26" rx="3"/>
+      <rect x="200" y="334" width="400" height="26" rx="3"/>
+    </g>
+    <g fill="#19858f">
+      <rect x="200" y="139" width="384" height="26" rx="3"/>
+      <circle cx="871.49" cy="152" r="7"/>
+    </g>
+    <g fill="#de8941">
+      <rect x="200" y="204" width="84.8" height="26" rx="3"/>
+      <rect x="200" y="269" width="124" height="26" rx="3"/>
+      <rect x="200" y="334" width="247.2" height="26" rx="3"/>
+      <circle cx="799.50" cy="217" r="7"/>
+      <circle cx="765.48" cy="282" r="7"/>
+      <circle cx="859.09" cy="347" r="7"/>
+    </g>
+    <g fill="#233042" font-size="14">
+      <text x="594" y="158">48.0</text>
+      <text x="295" y="223">10.6</text>
+      <text x="334" y="288">15.5</text>
+      <text x="457" y="353">30.9</text>
+      <text x="924" y="158">0.672664</text>
+      <text x="924" y="223">0.658952</text>
+      <text x="924" y="288">0.652472</text>
+      <text x="924" y="353">0.670302</text>
+    </g>
+    <text x="60" y="451" fill="#66788c" font-size="12">耗时含每轮训练与验证，不含最终 Test；完成轮次为 6 / 4 / 4 / 5。AUC 轴从 0.64 起。</text>
+  </g>
+</svg>
