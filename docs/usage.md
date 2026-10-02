@@ -189,3 +189,180 @@ python -m unittest discover -s tests -v
 ```
 
 原始数据、Parquet 分片和 `best.pt` 不进入 Git；长期保存所需检查点请另行存储。
+
+## 7. 可选：导出与本机 `/rank` 演示
+
+这一步在离线训练与校准完成后进行，不是线上广告系统。导出程序读取同一次运行的
+`config.yaml`、`best.pt`、`metrics.json`，以及该模型训练时的
+`data/processed/aliccp_full/vocab.json`；缺少词表不能从权重恢复原始特征 ID。
+它重建网络、严格加载权重，追踪 CTR/CVR/CTCVR 推理图，并用不同批大小、不同
+历史长度复核 TorchScript 与原模型输出。导出目录包含 `ranker.ts`、`vocab.json`、
+`manifest.json`，若存在验证集拟合的 Platt 参数，还包含 `platt.json`。不导出
+优化器状态或训练集。只对自己信任的训练检查点运行导出程序。
+
+```bash
+RUN_DIR="results/dcn_ple_esmm_aliccp_full_dropout_02_20260915_154204"
+python -m pip install "fastapi>=0.115,<1.0" "uvicorn>=0.30,<1.0" "pydantic>=2,<3"
+python scripts/export_ranker.py \
+  --run-directory "$RUN_DIR" \
+  --processed-directory data/processed/aliccp_full \
+  --output-directory "$RUN_DIR/serving" \
+  --device cpu
+python scripts/serve_ranker.py \
+  --artifact-directory "$RUN_DIR/serving" \
+  --device cuda --host 127.0.0.1 --port 8000 --torch-threads 1 \
+  --dynamic-batching \
+  --max-batch-requests 8 \
+  --max-batch-candidates 256 \
+  --max-batch-wait-ms 2
+```
+
+服务进程启动时只加载一次模型；另开一个同机终端调用与压测：
+
+```bash
+curl -sS http://127.0.0.1:8000/health
+curl -sS -X POST http://127.0.0.1:8000/rank \
+  -H 'Content-Type: application/json' \
+  --data-binary @docs/examples/rank_request.json
+python scripts/build_rank_payload.py \
+  --processed-directory data/processed/aliccp_full \
+  --max-candidates 8 --max-scanned 1000000 \
+  --output "$RUN_DIR/serving/rank_request_from_test.json"
+curl -sS -X POST http://127.0.0.1:8000/rank \
+  -H 'Content-Type: application/json' \
+  --data-binary @"$RUN_DIR/serving/rank_request_from_test.json"
+python scripts/benchmark_service.py \
+  --url http://127.0.0.1:8000/rank \
+  --health-url http://127.0.0.1:8000/health \
+  --payload-file "$RUN_DIR/serving/rank_request_from_test.json" \
+  --batch-sizes 1 8 32 --concurrencies 1 8 \
+  --requests 100 --warmup 10 \
+  --output "$RUN_DIR/serving/benchmark_results.json"
+```
+
+`/rank` 将 `user_features`（公共用户字段）、`context_features`（字段 `301`）
+与每个候选的 `features`（商品和组合字段）拼接。各字段接受原始
+`feature_id`/数值 `value` 列表；依训练词表编码，未登录词和缺失字段遵循原训练
+规则落到 `UNK=1`。组合字段 `508/509/702/853` 需要调用方按原数据口径提供，
+服务不会臆造交叉特征。一个请求内最多 128 个候选，统一批量推理并按分数降序返回
+`pctr`、点击后 `pcvr`、`pctcvr`、`score` 和 `rank`。默认使用**原始 CTCVR**
+排序；将 `score_mode` 改为 `ctr` 可按 CTR 排序。若导出目录含 `platt.json`，
+请求可设置 `probability_mode: "platt"` 获取分头校准并相乘后的概率；它可能改变
+排序，不能把该分数等同于 README 中报告的未校准 Test AUC。
+
+`build_rank_payload.py` 从已处理的官方 Test 中选择**同一用户、同一场景**的曝光，
+将整数索引按训练词表反查为原始 token；它只读数据，不用标签训练或拟合校准器。
+若扫描上限内不足 8 个候选，就输出找到的数量；压测脚本会循环这些真实候选
+构造指定大小的批次。这比手写示例更适合做初步性能检查，但单个请求仍不能代表
+全体用户和历史长度的分布。
+
+压测输出的 QPS 为成功 HTTP 请求数除以计时总秒数，P95 为成功请求的客户端
+端到端延迟（包含本机连接建立、特征编码、模型前向与响应传输；不含模型启动），
+同时记录候选打分吞吐与失败数。手写示例只用于检验接口格式，示例 token 大多会
+映射到 UNK；**正式报告性能前应检查请求是否具有代表性的候选数和历史长度**，
+固定机器、设备、线程数和并发设置，并明确这是单机离线服务压测。保持服务仅监听
+`127.0.0.1`；该演示没有鉴权，不应直接暴露公网。
+
+初步单请求检查完成后，从多个 Test 用户生成请求数组。脚本不改变模型，
+也不读取 Test 标签用于训练；它只为基线和动态合批生成同一份压测输入。
+
+```bash
+python scripts/build_rank_payload.py \
+  --processed-directory data/processed/aliccp_full \
+  --users 16 --max-candidates 8 --max-scanned 1000000 \
+  --output "$RUN_DIR/serving/rank_requests_16_users.json"
+```
+
+服务默认启用动态微批处理。并发请求先进入有界队列，在最多
+`max_batch_wait_ms` 的窗口内按 `max_batch_requests` 和
+`max_batch_candidates` 合并；Ranker 对各请求独立校验和编码，将合法候选统一
+`collate` 后只执行一次 TorchScript forward，再按候选数量切片、校准和排序。
+某个请求的非法字段只返回给该请求，不会使同批其他请求失败。`/health` 返回累计的
+批次数、平均每批请求/候选数、排队时间和执行时间；压测传入 `--health-url` 后，
+每个 case 会把测量区间内的计数差写入 `service_batching`，用于确认是否真实发生合批。
+
+动态批处理增加一个很短的等待窗口，低并发延迟可能略升；目标是在并发到达时减少
+模型 forward 次数，提高 request QPS 或 candidate throughput。它不会修改模型参数、
+特征编码、概率校准和排序规则。是否有效必须与关闭合批的同机基线对照，不能只报告
+优化后的数字。
+
+先在终端 A 启动关闭合批的基线服务：
+
+```bash
+python scripts/serve_ranker.py \
+  --artifact-directory "$RUN_DIR/serving" \
+  --device cuda --host 127.0.0.1 --port 8000 --torch-threads 1 \
+  --no-dynamic-batching
+```
+
+在终端 B 用固定输入连续压测三轮：
+
+```bash
+python scripts/benchmark_service.py \
+  --url http://127.0.0.1:8000/rank \
+  --health-url http://127.0.0.1:8000/health \
+  --payload-file "$RUN_DIR/serving/rank_requests_16_users.json" \
+  --batch-sizes 1 8 32 --concurrencies 1 8 \
+  --requests 500 --warmup 20 --repeats 3 \
+  --output "$RUN_DIR/serving/benchmark_no_dynamic_batching.json"
+```
+
+在终端 A 按 `Ctrl+C` 停止基线服务，然后以相同模型启动动态批处理：
+
+```bash
+python scripts/serve_ranker.py \
+  --artifact-directory "$RUN_DIR/serving" \
+  --device cuda --host 127.0.0.1 --port 8000 --torch-threads 1 \
+  --dynamic-batching \
+  --max-batch-requests 8 \
+  --max-batch-candidates 256 \
+  --max-batch-wait-ms 2
+```
+
+在终端 B 使用完全相同的输入和并发参数：
+
+```bash
+python scripts/benchmark_service.py \
+  --url http://127.0.0.1:8000/rank \
+  --health-url http://127.0.0.1:8000/health \
+  --payload-file "$RUN_DIR/serving/rank_requests_16_users.json" \
+  --batch-sizes 1 8 32 --concurrencies 1 8 \
+  --requests 500 --warmup 20 --repeats 3 \
+  --output "$RUN_DIR/serving/benchmark_dynamic_batching.json"
+```
+
+压测程序会先按请求中的最大候选数估算特征 token 总量，使用与服务一致的默认上限
+`--max-request-feature-tokens 16384`，固定保留对所有测试 case 都合法的模板集合；被过滤
+模板的索引和估算 token 数会输出到终端并写入 `template_filter`。基线与动态合批必须
+使用同一输入文件和相同过滤上限，不能只在发生 422 后跳过某一侧的失败请求。
+
+为了把队列/预处理路径与真正的多请求合并分开，还应补充同路径无合并对照：
+
+```bash
+python scripts/serve_ranker.py \
+  --artifact-directory "$RUN_DIR/serving" \
+  --device cuda --host 127.0.0.1 --port 8000 --torch-threads 1 \
+  --dynamic-batching \
+  --max-batch-requests 1 \
+  --max-batch-candidates 256 \
+  --max-batch-wait-ms 0
+```
+
+使用相同压测命令，将输出另存为 `benchmark_batcher_no_merge.json`。完整实测中，原始
+16 个 Test 用户模板有 9 个能在扩展至 32 候选后满足单请求 token 上限。并发 8 时：
+
+| 候选数 | 无合并 QPS | 动态 QPS | 无合并 P95 | 动态 P95 | 动态平均请求/Batch |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 61.73 | 130.63 | 183.86 ms | 113.26 ms | 4.03 |
+| 8 | 30.83 | 74.76 | 325.49 ms | 164.02 ms | 4.00 |
+| 32 | 15.80 | 33.98 | 602.92 ms | 306.23 ms | 3.97 |
+
+压测的 `summary` 保存各轮 QPS 与 P95 的中位数及 P95 范围，`cases`
+保留逐轮原始结果。`concurrency=1` 通常无法形成多请求批次，它用于量化
+2ms 等待窗口带来的延迟；`concurrency=8` 才是主要观察点。若
+`service_batching.batches` 约等于请求数，说明没有有效合批，应先检查客户端
+是否真正并发，而不是直接调大等待时间。
+
+选择的是扫描范围内先遇到的不同用户，每位用户仅保留同一场景的曝光；若某位用户
+不足 8 条，压测时会循环其已找到的候选。此方法能检验多个真实用户的特征长度，
+但不是对整个 Test 用户总体的随机抽样，不能写成生产环境的性能分布。

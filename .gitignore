@@ -18,6 +18,7 @@ results/*
 !results/README.md
 !results/experiment_summary.csv
 *.tar.gz
+*.zip
 
 # Editor and operating-system metadata.
 .idea/

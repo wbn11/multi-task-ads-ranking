@@ -1,5 +1,6 @@
 """Ads ranking model implementations."""
 
+from .dcn_esmm import DCNESMM
 from .dcnv2 import DCNv2
 from .dcn_ple import DCNPLE
 from .dcn_ple_esmm import DCNPLEESMM
@@ -12,6 +13,7 @@ from .shared_bottom import SharedBottom
 from .target_aware_dcn_ple_esmm import TargetAwareDCNPLEESMM
 
 __all__ = [
+    "DCNESMM",
     "DCNv2",
     "DCNPLE",
     "DCNPLEESMM",

@@ -9,6 +9,7 @@ from torch import nn
 
 from src.data.feature_encoder import FeatureEncoder
 
+from .dcn_esmm import DCNESMM
 from .dcn_ple import DCNPLE
 from .dcn_ple_esmm import DCNPLEESMM
 from .esmm import ESMM
@@ -44,6 +45,17 @@ def build_multitask_model(
         model_class = SharedBottom if model_name == "shared_bottom" else ESMM
         return model_class.from_feature_encoder(
             encoder,
+            shared_hidden_dims=_integer_tuple(
+                model_config["shared_hidden_dims"],
+                name="shared_hidden_dims",
+            ),
+            **common,
+        )
+    if model_name == "dcn_esmm":
+        return DCNESMM.from_feature_encoder(
+            encoder,
+            num_cross_layers=int(model_config["num_cross_layers"]),
+            cross_layer_norm=bool(model_config.get("cross_layer_norm", True)),
             shared_hidden_dims=_integer_tuple(
                 model_config["shared_hidden_dims"],
                 name="shared_hidden_dims",

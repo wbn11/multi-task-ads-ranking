@@ -16,6 +16,7 @@ if TORCH_AVAILABLE:
     from src.layers.embedding import SparseFeatureEmbedding, SparseLinearEmbedding
     from src.layers.expert import Expert, Gate
     from src.layers.fm import FactorizationMachine
+    from src.models.dcn_esmm import DCNESMM
     from src.models.dcnv2 import DCNv2
     from src.models.dcn_ple import DCNPLE
     from src.models.dcn_ple_esmm import DCNPLEESMM
@@ -310,6 +311,46 @@ class ESMMTest(unittest.TestCase):
         gradients = [p.grad for p in model.parameters() if p.grad is not None]
         self.assertTrue(gradients)
         self.assertTrue(all(bool(torch.isfinite(grad).all()) for grad in gradients))
+
+
+@unittest.skipUnless(TORCH_AVAILABLE, "PyTorch is not installed")
+class DCNESMMTest(unittest.TestCase):
+    def test_cross_product_identity_and_backward(self) -> None:
+        model = DCNESMM(
+            {field_id: 8 for field_id in ALL_FIELD_IDS},
+            embedding_dim=4,
+            num_cross_layers=2,
+            cross_layer_norm=True,
+            shared_hidden_dims=(16, 8),
+            tower_hidden_dims=(4,),
+            dropout=0.0,
+        )
+        output = model(make_model_batch())
+
+        self.assertEqual(
+            set(output),
+            {"ctr_logit", "cvr_logit", "ctr", "cvr", "ctcvr"},
+        )
+        self.assertTrue(
+            torch.allclose(output["ctcvr"], output["ctr"] * output["cvr"])
+        )
+        loss = output["ctr_logit"].mean() + output["cvr_logit"].mean()
+        loss.backward()
+        self.assertTrue(
+            any(
+                parameter.grad is not None
+                for parameter in model.cross_network.parameters()
+            )
+        )
+        gradients = [
+            parameter.grad
+            for parameter in model.parameters()
+            if parameter.grad is not None
+        ]
+        self.assertTrue(gradients)
+        self.assertTrue(
+            all(bool(torch.isfinite(gradient).all()) for gradient in gradients)
+        )
 
 
 @unittest.skipUnless(TORCH_AVAILABLE, "PyTorch is not installed")

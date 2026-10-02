@@ -23,6 +23,7 @@ from src.data.debug_batch import select_funnel_overfit_samples
 from src.data.feature_encoder import FeatureEncoder
 from src.losses.multitask_loss import ESMMLoss
 from src.models.esmm import ESMM
+from src.models.factory import build_multitask_model
 from src.trainer.ctr_experiment import (
     load_yaml,
     project_path,
@@ -81,8 +82,11 @@ def main() -> None:
     args = parse_args()
     config = load_yaml(project_path(PROJECT_ROOT, args.config))
     model_config = config["model"]
-    if str(model_config["name"]).lower() != "esmm":
-        raise ValueError("overfit_esmm.py requires model.name=esmm")
+    model_name = str(model_config["name"]).lower()
+    if model_name not in {"esmm", "dcn_esmm"}:
+        raise ValueError(
+            "overfit_esmm.py requires model.name in {'esmm', 'dcn_esmm'}"
+        )
     loss_config = config["loss"]
     overfit_config = config["overfit"]
 
@@ -130,18 +134,7 @@ def main() -> None:
         clicked_non_conversion_mask = click_positive_mask & ctcvr_negative_mask
 
         encoder = FeatureEncoder.load(processed_dir / "vocab.json")
-        model = ESMM.from_feature_encoder(
-            encoder,
-            embedding_dim=int(model_config["embedding_dim"]),
-            shared_hidden_dims=tuple(
-                int(value) for value in model_config["shared_hidden_dims"]
-            ),
-            tower_hidden_dims=tuple(
-                int(value) for value in model_config["tower_hidden_dims"]
-            ),
-            dropout=float(model_config["dropout"]),
-            embedding_pooling=str(model_config["embedding_pooling"]),
-        ).to(device)
+        model = build_multitask_model(encoder, model_config).to(device)
         criterion = ESMMLoss(
             ctr_weight=float(loss_config["ctr_weight"]),
             ctcvr_weight=float(loss_config["ctcvr_weight"]),
@@ -234,7 +227,7 @@ def main() -> None:
         )
         report = {
             "valid": valid,
-            "model": "esmm",
+            "model": model_name,
             "targets": ["click", "conversion"],
             "device": str(device),
             "split": split,

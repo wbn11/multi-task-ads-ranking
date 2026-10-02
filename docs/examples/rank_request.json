@@ -1,0 +1,30 @@
+{
+  "request_id": "offline-demo-001",
+  "user_features": {
+    "101": [{"feature_id": "example-user-id", "value": 1.0}],
+    "109_14": [{"feature_id": "example-category", "value": 2.0}]
+  },
+  "context_features": {
+    "301": [{"feature_id": "example-scene", "value": 1.0}]
+  },
+  "candidates": [
+    {
+      "ad_id": "item-a",
+      "features": {
+        "205": [{"feature_id": "example-item-a", "value": 1.0}],
+        "206": [{"feature_id": "example-category", "value": 1.0}],
+        "508": [{"feature_id": "example-user-category-cross-a", "value": 1.0}]
+      }
+    },
+    {
+      "ad_id": "item-b",
+      "features": {
+        "205": [{"feature_id": "example-item-b", "value": 1.0}],
+        "206": [{"feature_id": "example-category-2", "value": 1.0}],
+        "508": [{"feature_id": "example-user-category-cross-b", "value": 1.0}]
+      }
+    }
+  ],
+  "score_mode": "ctcvr",
+  "probability_mode": "raw"
+}

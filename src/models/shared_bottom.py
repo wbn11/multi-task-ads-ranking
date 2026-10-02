@@ -97,7 +97,9 @@ class SharedBottom(nn.Module):
             embedding_pooling=embedding_pooling,
         )
 
-    def forward(self, batch: Mapping[str, Any]) -> dict[str, Tensor]:
+    def _model_input(self, batch: Mapping[str, Any]) -> Tensor:
+        """Embed and flatten every schema field for downstream backbones."""
+
         features = batch.get("features")
         if not isinstance(features, Mapping):
             raise ValueError("batch must contain a features mapping")
@@ -120,7 +122,10 @@ class SharedBottom(nn.Module):
             )
 
         field_embeddings = torch.stack(dense_embeddings, dim=1)
-        model_input = field_embeddings.flatten(start_dim=1)
+        return field_embeddings.flatten(start_dim=1)
+
+    def forward(self, batch: Mapping[str, Any]) -> dict[str, Tensor]:
+        model_input = self._model_input(batch)
         shared_representation = self.shared_bottom(model_input)
         ctr_logit = self.ctr_output(
             self.ctr_tower(shared_representation)
